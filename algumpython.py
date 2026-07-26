@@ -20,7 +20,6 @@ async def ws_endpoint(ws: WebSocket):
             d = json.loads(await ws.receive_text())
             t = d.get("t")
             if t == "+":
-                # CORREÇÃO: Limpa duplicatas e adiciona sem usar a palavra-chave global
                 saved[:] = [b for b in saved if not (b["x"] == d["x"] and b["y"] == d["y"])]
                 saved.append({"id": d["id"], "x": d["x"], "y": d["y"], "r": d.get("r", 0), "s": d.get("s", 1), "o": d.get("o", 1), "c": d.get("c", None)})
                 for c in conns: await c.send_text(json.dumps({"t": "+", **saved[-1]}))
@@ -44,7 +43,7 @@ html = """
 <style>body{font:14px sans-serif;background:#111;color:#fff;text-align:center}canvas{background:#1a1a1a;border:1px solid #333;display:block;margin:10px auto;cursor:crosshair}button{background:#333;color:#fff;border:1px solid #555;padding:6px 12px;margin:3px;cursor:pointer}.active{background:#2196f3}</style>
 </head><body>
     <h3>GD Editor Minimal 🛠️</h3>
-    <button style="background:#ff9800" onclick="ex()">📥 Exportar</button><div id="m"></div>
+    <button style="background:#ff9800" onclick="ex()">📥 Exportar .TXT</button><div id="m"></div>
     <canvas id="cv" width="900" height="420"></canvas>
 <script>
     const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),S=30;let id=1,bs=[],lc=null;
@@ -79,25 +78,8 @@ html = """
         color:c=>{ws.send(JSON.stringify({t:"u",x:lc.x,y:lc.y,c}));return'Ok'},
         info:()=>bs.find(b=>b.x===lc.x&&b.y===lc.y)
     }};
-function ex(){
-    fetch('/export')
-        .then(r => r.json())
-        .then(d => {
-            // Cria um arquivo de texto virtual na memória do navegador
-            const blob = new Blob([d.g], { type: 'text/plain' });
-            const link = document.createElement('a');
-            
-            // Define o nome do arquivo .txt baixado
-            link.download = 'fase_gd_collab.txt';
-            link.href = window.URL.createObjectURL(blob);
-            
-            // Clica no link secretamente para iniciar o download e depois deleta o link
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-}
-
+    function ex(){fetch('/export').then(r=>r.json()).then(d=>{const b=new Blob([d.g],{type:'text/plain'});const l=document.createElement('a');l.download='fase_gd.txt';l.href=window.URL.createObjectURL(b);document.body.appendChild(l);l.click();document.body.removeChild(l)})}
+    window.onload=dr;
 </script></body></html>
 """
 if __name__ == "__main__": uvicorn.run(app, host="127.0.0.1", port=8000)
