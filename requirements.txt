@@ -1,2 +1,3 @@
 gd.py
 fastapi
+uvicorn
