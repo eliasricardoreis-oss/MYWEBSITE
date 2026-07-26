@@ -79,8 +79,25 @@ html = """
         color:c=>{ws.send(JSON.stringify({t:"u",x:lc.x,y:lc.y,c}));return'Ok'},
         info:()=>bs.find(b=>b.x===lc.x&&b.y===lc.y)
     }};
-    function ex(){fetch('/export').then(r=>r.json()).then(d=>{alert("Copiado no F12");console.log(d.g)})}
-    window.onload=dr;
+function ex(){
+    fetch('/export')
+        .then(r => r.json())
+        .then(d => {
+            // Cria um arquivo de texto virtual na memória do navegador
+            const blob = new Blob([d.g], { type: 'text/plain' });
+            const link = document.createElement('a');
+            
+            // Define o nome do arquivo .txt baixado
+            link.download = 'fase_gd_collab.txt';
+            link.href = window.URL.createObjectURL(blob);
+            
+            // Clica no link secretamente para iniciar o download e depois deleta o link
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+}
+
 </script></body></html>
 """
 if __name__ == "__main__": uvicorn.run(app, host="127.0.0.1", port=8000)
