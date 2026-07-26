@@ -2,12 +2,14 @@ import gd, json, uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 
+# Adiciona suporte a HEAD para o monitoramento da hospedagem não dar erro 405
 app = FastAPI()
 client = gd.Client()
 saved = []
 conns = []
 
-@app.get("/")
+# Aceita tanto GET quanto HEAD na rota principal
+@app.api_route("/", methods=["GET", "HEAD"])
 async def get(): return HTMLResponse(html)
 
 @app.websocket("/ws")
@@ -49,7 +51,7 @@ html = """
     const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),S=30;let id=1,bs=[],lc=null;
     const items=[{id:1,n:"Bloco",c:"#4a90e2",t:"cu"},{id:8,n:"Espinho",c:"#e24a4a",t:"sp"},{id:35,n:"Yellow Pad",c:"#ffd700",t:"ci"},{id:36,n:"Yellow Orb",c:"#ffcc00",t:"ob"},{id:1332,n:"Red Orb",c:"#ff0000",t:"ob"},{id:12,n:"P Cubo",c:"#00ffcc",t:"pt"},{id:13,n:"P Ship",c:"#ff9900",t:"pt"},{id:47,n:"P Ball",c:"#cc66ff",t:"pt"}];
     items.forEach(i=>{const b=document.createElement('button');b.innerText=i.n;if(i.id===1)b.className='active';b.onclick=()=>{id=i.id;document.querySelectorAll('#m button').forEach(x=>x.classList.remove('active'));b.classList.add('active')};document.getElementById('m').appendChild(b)});
-    const ws=new WebSocket(`ws://${window.location.host}/ws`);
+    const ws=new WebSocket(`${window.location.protocol==='https:'?'wws':'ws'}://${window.location.host}/ws`);
     function dr(){
         ctx.clearRect(0,0,cv.width,cv.height);ctx.strokeStyle='#222';
         for(let x=0;x<cv.width;x+=S)ctx.strokeRect(x,0,1,cv.height);for(let y=0;y<cv.height;y+=S)ctx.strokeRect(0,y,cv.width,1);
